@@ -2,7 +2,7 @@ package checkfilediff
 
 import (
 	"bufio"
-	"bytes"
+	"hash/crc64"
 	"io"
 	"log"
 	"math/rand"
@@ -14,6 +14,37 @@ const (
 )
 
 func IsSame(f1, f2 io.Reader) (bool, error) {
+	r1 := bufio.NewReader(f1)
+	r2 := bufio.NewReader(f2)
+
+	var b1, b2 []byte
+	b1 = make([]byte, bufSize)
+	b2 = make([]byte, bufSize)
+
+	for {
+		n1, err1 := r1.Read(b1)
+		n2, err2 := r2.Read(b2)
+		if err1 == io.EOF && err2 == io.EOF {
+			break
+		}
+
+		if err1 != nil {
+			return false, err1
+		}
+
+		if err2 != nil {
+			return false, err2
+		}
+
+		if !isSame(b1[:n1], b2[:n2]) {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func IsMaybeSame(f1, f2 io.Reader) (bool, error) {
 	r1 := bufio.NewReader(f1)
 	r2 := bufio.NewReader(f2)
 
@@ -60,7 +91,15 @@ func isSame(a1, a2 []byte) bool {
 }
 
 func isSame2(a1, a2 []byte) bool {
-	return bytes.Compare(a1, a2) == 0
+	table := crc64.MakeTable(10)
+	ui1 := crc64.Checksum(a1, table)
+	ui2 := crc64.Checksum(a2, table)
+
+	if ui1 != ui2 {
+		return false
+	}
+
+	return true
 }
 
 func isMaybeSame(a1, a2 []byte) bool {

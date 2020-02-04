@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	temporary = "tmp/"
+	temporary = "/opt/rsrc/"
 )
 
 const (
@@ -42,7 +42,7 @@ func postprocess() {
 }
 
 func TestMain(m *testing.M) {
-	flag.IntVar(&testType, "t", 1, "type. 1 is none, 2 is cache. default 1")
+	flag.IntVar(&testType, "t", 2, "type. 1 is none, 2 is cache. default 2")
 	flag.Parse()
 
 	preprocess()
@@ -108,6 +108,15 @@ func createFile(path string, filesize, seed int64) error {
 	return nil
 }
 
+func TestSuccess(t *testing.T) {
+	const filepath1 = temporary + "giga1"
+	const filepath2 = temporary + "giga1"
+
+	const size = 1 * 1024 * 1024 * 1024
+
+	testSuccess(t, filepath1, filepath2, size)
+}
+
 type test interface {
 	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
@@ -155,7 +164,7 @@ func testSuccess(t test, filepath1, filepath2 string, size int64) {
 	t.Log(time.Now().Sub(s))
 }
 
-func TestIsSameSuccess(t *testing.T) {
+func testIsSameSuccess(t *testing.T) {
 	t.Run("10 Byte", func(t *testing.T) {
 		const filepath1 = temporary + "byte1"
 		const filepath2 = temporary + "byte2"
@@ -192,14 +201,14 @@ func TestIsSameSuccess(t *testing.T) {
 		testSuccess(t, filepath1, filepath2, size)
 	})
 
-	t.Run("1 Giga byte", func(t *testing.T) {
-		const filepath1 = temporary + "giga1"
-		const filepath2 = temporary + "giga2"
+	//t.Run("1 Giga byte", func(t *testing.T) {
+	//	const filepath1 = temporary + "giga1"
+	//	const filepath2 = temporary + "giga2"
 
-		const size = 1 * 1024 * 1024 * 1024
+	//	const size = 1 * 1024 * 1024 * 1024
 
-		testSuccess(t, filepath1, filepath2, size)
-	})
+	//	testSuccess(t, filepath1, filepath2, size)
+	//})
 }
 
 func BenchmarkSame(b *testing.B) {
@@ -247,14 +256,14 @@ func BenchmarkSame(b *testing.B) {
 		}
 	})
 
-	b.Run("1 Giga Byte", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			const filepath1 = temporary + "giga1"
-			const filepath2 = temporary + "giga2"
+	//b.Run("1 Giga Byte", func(b *testing.B) {
+	//	for i := 0; i < b.N; i++ {
+	//		const filepath1 = temporary + "giga1"
+	//		const filepath2 = temporary + "giga2"
 
-			const size = 1 * 1024 * 1024 * 1024
+	//		const size = 1 * 1024 * 1024 * 1024
 
-			testSuccess(b, filepath1, filepath2, size)
-		}
-	})
+	//		testSuccess(b, filepath1, filepath2, size)
+	//	}
+	//})
 }
